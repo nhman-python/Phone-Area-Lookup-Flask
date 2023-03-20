@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template_string
-
+import os
 app = Flask(__name__)
-
 template = """
 <!DOCTYPE html>
 <html>
@@ -104,39 +103,44 @@ area_codes_to_names = {
 }
 
 def extract_numbers(s):
-    """Extract all digits from a string."""
-    return ''.join(filter(str.isdigit, s))
+  """Extract and return only the digits from a string"""
+  if s is None:
+    return ''
+  numbers = ''.join(filter(str.isdigit, s))
+  return numbers if numbers else ''
 
 def get_area_name(phone_number):
-    """Return the area name for a given phone number."""
-    phone_number = extract_numbers(phone_number)
-    if len(phone_number) not in [9, 10, 12]:
-        return "Invalid phone number"
-    if phone_number.startswith("05") and len(phone_number) == 10:
-        area_code = phone_number[0:3]
-    elif phone_number.startswith("972"):
-        area_code = phone_number[0:5]
-        phone_number = "+" + str(phone_number)
-    elif phone_number.startswith('0') and len(phone_number) == 9:
-        area_code = phone_number[0:2]
-    else:
-        return "Invalid phone number"
-
-    if area_code not in area_codes_to_names:
-        return "Invalid area code"
-    else:
-        area_name = area_codes_to_names[area_code]
-        return area_name
-
-
+  """Return the area name for a given phone number."""
+  phone_number = extract_numbers(phone_number)
+  if len(phone_number) not in [9, 10, 12]:
+    return "Invalid phone number"
+  if phone_number.startswith("05") and len(phone_number) == 10:
+    area_code = phone_number[0:3]
+  elif phone_number.startswith("972"):
+    area_code = phone_number[0:5]
+    phone_number = "+" + str(phone_number)
+  elif phone_number.startswith('0') and len(phone_number) == 9:
+    area_code = phone_number[0:2]
+  else:
+    return "Invalid phone number"
+  
+  if area_code not in area_codes_to_names:
+      return "Invalid area code"
+  else:
+      area_name = area_codes_to_names[area_code]
+      return area_name
+  
 @app.route("/", methods=["GET", "POST"])
 def lookup():
-    if request.method == "POST":
-        phone_number = request.form.get("phone_number")
-        area_name = get_area_name(phone_number)
-        return render_template_string(template, phone_number=phone_number, result=area_name)
-    return render_template_string(template)
+  if request.method == "POST":
+    phone_number = request.form.get("phone_number")
+    area_name = get_area_name(phone_number)
+    user_agent = request.headers.get('User-Agent')
+    with open('user_agents.txt', 'a') as f:
+      f.write(user_agent + '\n')
+      os.stat('user_agents.txt')
+    return render_template_string(template, phone_number=phone_number, result=area_name)
+  return render_template_string(template)
 
 if __name__ == "__main__":
-    app.run()
-
+    app.run(debug=False)
