@@ -12,9 +12,10 @@ Area code lookup web app built with Flask. Enter a phone number to get the corre
 
 Note: You can replace app.py with the name of your Flask app file, if it is different. Also, if you are deploying the app on a server, you will need to configure the server to run the app and expose it to the internet.
 
-'''
+```
 pip install flask
-'''
-'''
+```
+
+```
 pip install requests
-'''
+```
